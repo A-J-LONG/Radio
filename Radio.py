@@ -6,7 +6,6 @@ import sys
 import time
 os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
 import pygame
-import asyncio
 import subprocess as SubP
 
 def Music (PLAYTHIS):
@@ -19,10 +18,10 @@ def Music (PLAYTHIS):
 def ttsPlay():
 
  
-    pygame.mixer.music.load(VOICEPATH)
+    pygame.mixer.music.load(SPEECHPATH)
     pygame.mixer.music.play()
 
-    pygame.mixer.Sound(VOICEPATH)
+    pygame.mixer.Sound(SPEECHPATH)
 
     while pygame.mixer.music.get_busy():
         time.sleep(0.5)
@@ -78,23 +77,24 @@ while True:
     
     BASEPATH = os.path.dirname(__file__)
     MUSICPATH = os.path.join(BASEPATH, "Audio", "Music")
-    VOICEPATH = os.path.join(BASEPATH, "Audio", "Voices", "Speech.mp3")
+    SPEECHPATH = os.path.join(BASEPATH, "Audio", "Speech", "Speech.mp3")
     DATAPATH = os.path.join(BASEPATH, "Data")
     APIPATH = os.path.join(DATAPATH, "API.txt")
     SCRIPTLOCATION = os.path.join(DATAPATH, "scripts", "Script.txt")
         
-    musicToPlay = [ f for f in os.listdir(MUSICPATH)[RANDOM]
+    
+    musicFiles = [ f for f in os.listdir(MUSICPATH)
                    if  f != ".gitkeep" ]
     
-    RANDOM = random.choice(musicToPlay)
+    selectedSong = random.choice(musicFiles)
 
-    songPlayed = EasyID3(os.path.join(MUSICPATH, musicToPlay))
-    
+    songPlayed = EasyID3(os.path.join(MUSICPATH, selectedSong))
+
     with open(SCRIPTLOCATION, "w") as f :
         f.write(LLM(songPlayed))
     
     SubP.Popen([sys.executable, "TTS_Gen.py"])
     
-    Music(musicToPlay)
+    Music(selectedSong)
     
     ttsPlay()
