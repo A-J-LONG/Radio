@@ -3,7 +3,6 @@ import edge_tts
 import asyncio
 
 async def ttsAudioGeneration(text):
-    print(text)
 
     communication = edge_tts.Communicate(text, "en-IE-EmilyNeural", rate="+10%")
 
@@ -20,5 +19,3 @@ with open(SCRIPTLOCATION, "r") as f :
     script = f.read()
 
 asyncio.run(ttsAudioGeneration(script))
-
-print("TTS done")
