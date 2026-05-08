@@ -1,5 +1,3 @@
-from tkinter import CURRENT
-from urllib import response
 from cerebras.cloud.sdk import Cerebras
 from mutagen.easyid3 import EasyID3
 import random
