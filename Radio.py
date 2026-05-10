@@ -122,6 +122,9 @@ def main() :
       
         selectedSong = random.choice(musicFiles)
         selectedSong2 = random.choice(musicFiles)
+
+        while selectedSong2 == selectedSong :
+            selectedSong2 = random.choice(musicFiles)
         
         songPlayed = EasyID3(os.path.join(MUSICPATH, selectedSong))
         songPlayed2 = EasyID3(os.path.join(MUSICPATH, selectedSong2))

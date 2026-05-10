@@ -371,3 +371,6 @@ Audio/Music/*
 
 # Commands
 Command.txt
+
+# Keep bin
+!bin/
