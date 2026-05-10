@@ -367,7 +367,9 @@ Data/API.txt
 
 # Music
 Audio/Music/*
+Audio/Speech/*
 !Audio/Music/.gitkeep
+!Audio/Speech/.gitkeep
 
 # Keep bin
 !bin/
