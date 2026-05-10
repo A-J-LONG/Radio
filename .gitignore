@@ -370,7 +370,7 @@ Audio/Music/*
 !Audio/Music/.gitkeep
 
 # Commands
-Command.txt
+# Command.txt
 
 # Keep bin
 !bin/

@@ -56,12 +56,12 @@
    'Toolkit\\api-ms-win-core-file-l1-1-0.dll',
    'BINARY'),
   ('api-ms-win-core-file-l1-2-0.dll',
-   'C:\\Program Files\\Microsoft Visual '
-   'Studio\\2022\\Community\\Common7\\IDE\\api-ms-win-core-file-l1-2-0.dll',
+   'C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance '
+   'Toolkit\\api-ms-win-core-file-l1-2-0.dll',
    'BINARY'),
   ('api-ms-win-core-file-l2-1-0.dll',
-   'C:\\Program Files\\Microsoft Visual '
-   'Studio\\2022\\Community\\Common7\\IDE\\api-ms-win-core-file-l2-1-0.dll',
+   'C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance '
+   'Toolkit\\api-ms-win-core-file-l2-1-0.dll',
    'BINARY'),
   ('api-ms-win-core-handle-l1-1-0.dll',
    'C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance '
@@ -80,8 +80,8 @@
    'Toolkit\\api-ms-win-core-libraryloader-l1-1-0.dll',
    'BINARY'),
   ('api-ms-win-core-localization-l1-2-0.dll',
-   'C:\\Program Files\\Microsoft Visual '
-   'Studio\\2022\\Community\\Common7\\IDE\\api-ms-win-core-localization-l1-2-0.dll',
+   'C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance '
+   'Toolkit\\api-ms-win-core-localization-l1-2-0.dll',
    'BINARY'),
   ('api-ms-win-core-memory-l1-1-0.dll',
    'C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance '
@@ -100,8 +100,8 @@
    'Toolkit\\api-ms-win-core-processthreads-l1-1-0.dll',
    'BINARY'),
   ('api-ms-win-core-processthreads-l1-1-1.dll',
-   'C:\\Program Files\\Microsoft Visual '
-   'Studio\\2022\\Community\\Common7\\IDE\\api-ms-win-core-processthreads-l1-1-1.dll',
+   'C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance '
+   'Toolkit\\api-ms-win-core-processthreads-l1-1-1.dll',
    'BINARY'),
   ('api-ms-win-core-profile-l1-1-0.dll',
    'C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance '
@@ -128,8 +128,8 @@
    'Toolkit\\api-ms-win-core-sysinfo-l1-1-0.dll',
    'BINARY'),
   ('api-ms-win-core-timezone-l1-1-0.dll',
-   'C:\\Program Files\\Microsoft Visual '
-   'Studio\\2022\\Community\\Common7\\IDE\\api-ms-win-core-timezone-l1-1-0.dll',
+   'C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance '
+   'Toolkit\\api-ms-win-core-timezone-l1-1-0.dll',
    'BINARY'),
   ('api-ms-win-core-util-l1-1-0.dll',
    'C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance '
@@ -1182,8 +1182,8 @@
    'ipsum.txt',
    'DATA'),
   ('ucrtbase.dll',
-   'C:\\Program Files\\Microsoft Visual '
-   'Studio\\2022\\Community\\Common7\\IDE\\ucrtbase.dll',
+   'C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance '
+   'Toolkit\\ucrtbase.dll',
    'BINARY'),
   ('unicodedata.pyd', 'C:\\Python313\\DLLs\\unicodedata.pyd', 'EXTENSION'),
   ('werkzeug-3.1.8.dist-info\\INSTALLER',

@@ -1,4 +1,5 @@
 from cerebras.cloud.sdk import Cerebras
+from flask.ctx import F
 from mutagen.easyid3 import EasyID3
 from flask import Flask, Response
 from waitress import serve
@@ -198,6 +199,9 @@ else :
     except Exception:
         raise RuntimeError(f"FFMPEG IS NOT EXECUTABLE PLEASE RUN : chmod +x {FFMPEGPATH}")
 
+with open(os.path.join(DATAPATH, "port.txt"), "r") as f :
+    PORT = f.read().strip()
+
 audio_Buffer = Queue(maxsize=200)
 currentChunk = b""
 
@@ -209,4 +213,4 @@ def stream() :
 threading.Thread(target=broadCaster, daemon=True).start()
 
 if __name__ == "__main__":
-    serve(app, host="0.0.0.0", port=8080)
+    serve(app, host="0.0.0.0", port=PORT)
