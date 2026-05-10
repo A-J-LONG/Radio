@@ -366,10 +366,10 @@ FodyWeavers.xsd
 Data/API.txt
 
 # Music
-!Audio/Music/.gitkeep
-!Audio/Speech/.gitkeep
 Audio/Music/*
 Audio/Speech/*
+!Audio/Music/.gitkeep
+!Audio/Speech/.gitkeep
 
 # Keep bin
 !bin/
