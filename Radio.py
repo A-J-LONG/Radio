@@ -1,5 +1,4 @@
 from cerebras.cloud.sdk import Cerebras
-from cerebras.cloud.sdk.types import chat
 from mutagen.easyid3 import EasyID3
 from flask import Flask, Response
 from waitress import serve
@@ -38,7 +37,7 @@ def LLM(firstSong, lastSong):
 
                     
                     "role": "system",
-                    "content": f"You are a Female radio presenter called Emily, The previous 2 songs played were {firstSong} and {lastSong} in that order, do not describe your actions only your words, do not make up what is coming up next you dont know"
+                    "content": f"You are a Female radio presenter called Emily, The previous 2 songs played were {firstSong} and {lastSong}(this has already been played) in that order, do not describe your actions only your words, do not make up what is coming up next you dont know"
                      
                 }
         ],
