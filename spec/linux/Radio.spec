@@ -5,7 +5,7 @@ a = Analysis(
     ['../../Radio.py'],
     pathex=[],
     binaries=[],
-    datas=[('/home/vm/Desktop/Radio-master/bin', 'bin')],
+    datas=[('/home/vm/Radio/bin', 'bin')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

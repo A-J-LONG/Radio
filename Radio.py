@@ -198,7 +198,7 @@ else :
     except Exception:
         raise RuntimeError(f"FFMPEG IS NOT EXECUTABLE PLEASE RUN : chmod +x {FFMPEGPATH}")
 
-with open(os.path.join(DATAPATH, "port.txt"), "r") as f :
+with open(os.path.join(DATAPATH, "Port.txt"), "r") as f :
     PORT = f.read().strip()
 
 audio_Buffer = Queue(maxsize=200)
