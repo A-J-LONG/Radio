@@ -1,5 +1,4 @@
 from cerebras.cloud.sdk import Cerebras
-from flask.ctx import F
 from mutagen.easyid3 import EasyID3
 from flask import Flask, Response
 from waitress import serve
@@ -98,7 +97,7 @@ def streamOutput(LOCATION, Metadata) :
         "-metadata", f"album={song_artist}",
         "-f", "mp3",         
         "pipe:1"
-    ], stdout=SubP.PIPE, stderr=SubP.DEVNULL, creationflags=SubP.CREATE_NO_WINDOW)
+    ], stdout=SubP.PIPE, stderr=SubP.DEVNULL)
 
     try:
         while process.poll() is None:
