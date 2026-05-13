@@ -1,5 +1,7 @@
+from mutagen.id3 import ID3NoHeaderError
 from cerebras.cloud.sdk import Cerebras
 from mutagen.easyid3 import EasyID3
+from mutagen.flac import FLAC
 from flask import Flask, Response
 from waitress import serve
 from queue import Queue
@@ -37,7 +39,7 @@ def LLM(firstSong, lastSong):
 
                     
                     "role": "system",
-                    "content": f"You are a Female radio presenter called Emily, The previous 2 songs played were {firstSong} and {lastSong}(this has already been played) in that order, do not describe your actions only your words, do not make up what is coming up next you dont know"
+                    "content": f"You are a Female radio presenter called Emily, The previous 2 songs played were {firstSong} and {lastSong}(this has already been played) in that order, do not describe your actions only your words, do not make up what is coming up next you dont know. Title, album or artist will say Unknow Artist/Title/Album if its unknow, anmything else and that is the name of the title/artist/album"
                      
                 }
         ],
@@ -79,8 +81,6 @@ async def ttsAudioGeneration(text):
 
 def streamOutput(LOCATION, Metadata) :
 
-    print(f"FFMPEG STARTED : {LOCATION}")
-
     song_title = Metadata.get("title", ["Unknown"])[0]
     song_artist = Metadata.get("artist", ["Unknown"])[0]
 
@@ -91,13 +91,13 @@ def streamOutput(LOCATION, Metadata) :
         "-map", "0:a:0",        
         "-ar", "44100",        
         "-ac", "2",            
-        "-acodec", "libmp3lame",
-        "-b:a", "192k",
+        "-c:a", "mp3",
+        "-q:a", "2",
         "-metadata", f"title={song_title}",
         "-metadata", f"album={song_artist}",
         "-f", "mp3",         
         "pipe:1"
-    ], stdout=SubP.PIPE, stderr=SubP.DEVNULL)
+    ], stdout=SubP.PIPE)
 
     try:
         while process.poll() is None:
@@ -111,22 +111,76 @@ def streamOutput(LOCATION, Metadata) :
 
 def main() :
     while True:
-        
-        musicFiles = [ f for f in os.listdir(MUSICPATH) if  f != ".gitkeep" ]
 
-        if not musicFiles :
+        if not activeMusicList :
             print (f"NO MUSIC FOUND IN {MUSICPATH}")    
             time.sleep(5)
             continue
       
-        selectedSong = random.choice(musicFiles)
-        selectedSong2 = random.choice(musicFiles)
+        selectedSong = random.choice(activeMusicList)
+        selectedSong2 = random.choice(activeMusicList)
 
         while selectedSong2 == selectedSong :
-            selectedSong2 = random.choice(musicFiles)
-        
-        songPlayed = EasyID3(os.path.join(MUSICPATH, selectedSong))
-        songPlayed2 = EasyID3(os.path.join(MUSICPATH, selectedSong2))
+            selectedSong2 = random.choice(activeMusicList)
+
+        if selectedSong.endswith(".mp3"):
+            path = os.path.join(MUSICPATH, selectedSong)
+            try :
+                songPlayed = EasyID3(path)
+            except ID3NoHeaderError :
+                EasyID3().save(path)
+                songPlayed = EasyID3(path)
+                if not songPlayed.get("title") :
+                    songPlayed["title"] =  "Unknown Title"
+                if not songPlayed.get("album") :
+                    songPlayed["album"] =  "Unknown Album"
+                if not songPlayed.get("artist") :
+                    songPlayed["artist"] =  "Unknown Artist"
+
+                songPlayed.save(path)
+        elif selectedSong.endswith(".flac"):
+            path = os.path.join(MUSICPATH, selectedSong)
+
+            songPlayed = FLAC(path)
+            if not songPlayed.get("title") :
+                songPlayed["title"] =  "Unknown Title"
+            if not songPlayed.get("album") :
+                songPlayed["album"] =  "Unknown Album"
+            if not songPlayed.get("artist") :
+                songPlayed["artist"] =  "Unknown Artist"
+
+            songPlayed.save(path)
+
+        if selectedSong2.endswith(".mp3"):
+            path = os.path.join(MUSICPATH, selectedSong2)
+            try :
+                songPlayed2 = EasyID3(path)
+            except ID3NoHeaderError :
+                EasyID3().save(path)
+                songPlayed2 = EasyID3(path)
+                if not songPlayed2.get("title") :
+                    songPlayed2["title"] =  "Unknown Title"
+                if not songPlayed2.get("album") :
+                    songPlayed2["album"] =  "Unknown Album"
+                if not songPlayed2.get("artist") :
+                    songPlayed2["artist"] =  "Unknown Artist"
+
+                songPlayed2.save(path)
+        elif selectedSong2.endswith(".flac") :
+            path = os.path.join(MUSICPATH, selectedSong2)
+
+            songPlayed2 = FLAC(path)
+            if not songPlayed2.get("title") :
+                songPlayed2["title"] =  "Unknown Title"
+            if not songPlayed2.get("album") :
+                songPlayed2["album"] =  "Unknown Album"
+            if not songPlayed2.get("artist") :
+                songPlayed2["artist"] =  "Unknown Artist"
+
+            songPlayed2.save(path)
+
+
+
         speechPlayed = {
                         "artist": "Emily",
                         "album": "Edge_tts",
@@ -200,6 +254,12 @@ else :
 
 with open(os.path.join(DATAPATH, "Port.txt"), "r") as f :
     PORT = f.read().strip()
+
+    activeMusicList = []
+for root, _, files  in os.walk(MUSICPATH):
+    for f in files:
+        if f.endswith((".flac", ".mp3")):
+             activeMusicList.append(os.path.join(root, f))
 
 audio_Buffer = Queue(maxsize=200)
 currentChunk = b""
