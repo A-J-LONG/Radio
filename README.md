@@ -1,4 +1,7 @@
 # Radio 
+Currently Supports .mp3 and .flac
+
+Get a free API key from https://www.cerebras.ai/pricing
 
 On Windows
 
@@ -12,6 +15,4 @@ cd dist/linux/Radio
 
 ./Radio
 
-Currently Supprots .mp3 and .flac
 
-Get a free API key from https://www.cerebras.ai/pricing
