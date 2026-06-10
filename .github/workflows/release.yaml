@@ -25,20 +25,14 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install pyinstaller
-          # Strips pygame out of requirements before installing
           if (Test-Path requirements.txt) {
             (Get-Content requirements.txt) | Where-Object { $_ -notmatch 'pygame' } | Set-Content requirements.txt
             pip install -r requirements.txt
           }
 
       - name: Build Windows EXE (onefile)
-        run: |
-          pyinstaller --onefile --console --noconfirm --clean ^
-            --distpath dist/windows ^
-            --workpath build/windows ^
-            --specpath spec/windows ^
-            --add-data "bin/FFmpeg/Windows;bin/FFmpeg/Windows" ^
-            Radio.py
+        # Kept on a single line to fix the PowerShell multi-line parsing crash
+        run: pyinstaller --onefile --console --noconfirm --clean --distpath dist/windows --workpath build/windows --specpath . --add-data "bin/FFmpeg/Windows;bin/FFmpeg/Windows" Radio.py
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
@@ -62,20 +56,14 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install pyinstaller
-          # Strips pygame out of requirements before installing
           if [ -f requirements.txt ]; then
             sed -i '/pygame/d' requirements.txt
             pip install -r requirements.txt
           fi
 
       - name: Build Linux binary (onefile)
-        run: |
-          pyinstaller --onefile --console --noconfirm --clean \
-            --distpath dist/linux \
-            --workpath build/linux \
-            --specpath spec/linux \
-            --add-data "bin/FFmpeg/Linux:bin/FFmpeg/Linux" \
-            Radio.py
+        # Changed --specpath to "." so PyInstaller roots its asset-search out of your main directory
+        run: pyinstaller --onefile --console --noconfirm --clean --distpath dist/linux --workpath build/linux --specpath . --add-data "bin/FFmpeg/Linux:bin/FFmpeg/Linux" Radio.py
 
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v4
