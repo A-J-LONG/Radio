@@ -1,10 +1,17 @@
+# TODO Fix searching music files everytime
+# TODO Refactor main to smaller functions
+# TODO Give LLM memory
+# TODO Add a --NoAI argument for startup
+
+
+from asyncio.subprocess import DEVNULL
+from pickle import NONE
 from mutagen.id3 import ID3NoHeaderError
 from cerebras.cloud.sdk import Cerebras
 from mutagen.easyid3 import EasyID3
 from mutagen.flac import FLAC
 from flask import Flask, Response
 from waitress import serve
-from queue import Queue
 import subprocess as SubP
 import threading
 import edge_tts
@@ -13,22 +20,33 @@ import asyncio
 import random
 import time
 import stat
+import uuid
 import sys
 import os
 
+class Queue():
+    def __init__(self) :
+        self.list = []
+
+    def add(self, input):
+        self.list.append(input)
+    
+    def get(self) : 
+        return self.list.pop(0)
+
 def LLM(firstSong, lastSong):
     try :    
-        with open(APIPATH, "r") as f :
-            API = f.read().strip()
-    
-        if not API :
-            raise ValueError
+       with open(APIPATH, "r") as f :
+           API = f.read().strip()
+   
+       if not API :
+           raise ValueError
     except (FileNotFoundError, ValueError):
-        API = input("Input API key").strip()
-    
+       API = input("Input API key").strip()
+   
     with open(APIPATH, "w") as f :
         f.write(API)
-
+    
     client = Cerebras(
         api_key = API
     )
@@ -36,20 +54,20 @@ def LLM(firstSong, lastSong):
         chat_completion = client.chat.completions.create(
             messages=[
                 {
-
+        
                     
                     "role": "system",
                     "content": f"You are a Female radio presenter called Emily, The previous 2 songs played were {firstSong} and {lastSong}(this has already been played) in that order, do not describe your actions only your words, do not make up what is coming up next you dont know. Title, album or artist will say Unknow Artist/Title/Album if its unknow, anmything else and that is the name of the title/artist/album"
                      
                 }
         ],
-            model="llama3.1-8b",
+            model="gpt-oss-120b",
         )
         return(chat_completion.choices[0].message.content)
         
          
     except Exception as e:
-
+    
         try:
             error_code = e.response.status_code
             if error_code == 401:
@@ -57,21 +75,24 @@ def LLM(firstSong, lastSong):
                 print("ERROR 401 INVALID API KEY")
             
                 API = input("Input API key").strip()
-        
+            
                 with open(APIPATH, "w") as f :
                         f.write(API)
                     
                 return(LLM())
             elif error_code == 429:
                 return("Cereberus is facing high traffic right now please try again later")
-    
+            
+            elif error_code == 404 :
+                 return("ERROR CEREBERUS MODEL NOT FOUND")
+            
             elif error_code != 200:
-                print(f"ERROR CODE : {error_code}")
+                print(f"CEREBERUS ERROR CODE : {error_code}")
                 return("AN UNKNOWN ERROR OCCURED")
         except :
-                print(f"Error Code Type : {type(e)}")
-                print(f"Error Details : {e}")
-                return("AN ERROR OCCURED")
+            print(f"Error Code Type : {type(e)}")
+            print(f"Error Details : {e}")
+            return("AN ERROR OCCURED")
 
 async def ttsAudioGeneration(text):
 
@@ -83,7 +104,7 @@ def streamOutput(LOCATION, Metadata) :
 
     song_title = Metadata.get("title", ["Unknown"])[0]
     song_artist = Metadata.get("artist", ["Unknown"])[0]
-
+    
     process = SubP.Popen([
         FFMPEGPATH,
         "-re",
@@ -97,8 +118,8 @@ def streamOutput(LOCATION, Metadata) :
         "-metadata", f"album={song_artist}",
         "-f", "mp3",         
         "pipe:1"
-    ], stdout=SubP.PIPE)
-
+    ], stdout=SubP.PIPE, stderr=SubP.DEVNULL)
+    
     try:
         while process.poll() is None:
             chunk = process.stdout.read(4096)
@@ -111,7 +132,7 @@ def streamOutput(LOCATION, Metadata) :
 
 def main() :
     while True:
-
+    
         if not activeMusicList :
             print (f"NO MUSIC FOUND IN {MUSICPATH}")    
             time.sleep(5)
@@ -119,10 +140,10 @@ def main() :
       
         selectedSong = random.choice(activeMusicList)
         selectedSong2 = random.choice(activeMusicList)
-
+    
         while selectedSong2 == selectedSong :
             selectedSong2 = random.choice(activeMusicList)
-
+    
         if selectedSong.endswith(".mp3"):
             path = os.path.join(MUSICPATH, selectedSong)
             try :
@@ -136,11 +157,11 @@ def main() :
                     songPlayed["album"] =  "Unknown Album"
                 if not songPlayed.get("artist") :
                     songPlayed["artist"] =  "Unknown Artist"
-
+    
                 songPlayed.save(path)
         elif selectedSong.endswith(".flac"):
             path = os.path.join(MUSICPATH, selectedSong)
-
+    
             songPlayed = FLAC(path)
             if not songPlayed.get("title") :
                 songPlayed["title"] =  "Unknown Title"
@@ -148,9 +169,9 @@ def main() :
                 songPlayed["album"] =  "Unknown Album"
             if not songPlayed.get("artist") :
                 songPlayed["artist"] =  "Unknown Artist"
-
+    
             songPlayed.save(path)
-
+    
         if selectedSong2.endswith(".mp3"):
             path = os.path.join(MUSICPATH, selectedSong2)
             try :
@@ -164,11 +185,11 @@ def main() :
                     songPlayed2["album"] =  "Unknown Album"
                 if not songPlayed2.get("artist") :
                     songPlayed2["artist"] =  "Unknown Artist"
-
+    
                 songPlayed2.save(path)
         elif selectedSong2.endswith(".flac") :
             path = os.path.join(MUSICPATH, selectedSong2)
-
+    
             songPlayed2 = FLAC(path)
             if not songPlayed2.get("title") :
                 songPlayed2["title"] =  "Unknown Title"
@@ -176,28 +197,28 @@ def main() :
                 songPlayed2["album"] =  "Unknown Album"
             if not songPlayed2.get("artist") :
                 songPlayed2["artist"] =  "Unknown Artist"
-
+    
             songPlayed2.save(path)
-
-
-
+    
+    
+    
         speechPlayed = {
                         "artist": "Emily",
                         "album": "Edge_tts",
                         "title": "Speech Broadcast"
                         }                    
-
+    
         SONGPATH = os.path.join(MUSICPATH, selectedSong)
         SONGPATH2 = os.path.join(MUSICPATH, selectedSong2)
-
+    
         print(f"Now Playing : {songPlayed.get("title",["Unknown"])[0]}")
         print(f"Up Next : {songPlayed2.get("title",["Unknown"])[0]}")
-
-
+    
+    
         script = (LLM(songPlayed, songPlayed2))
         
         threading.Thread(target=lambda: asyncio.run(ttsAudioGeneration(script)),daemon=True).start()
-  
+    
         newCycle = True
         i = 0
         while i <= 1:
@@ -213,22 +234,26 @@ def main() :
         yield from streamOutput(SPEECHPATH, speechPlayed)
 
 def broadCaster() :
-    global currentChunk
-    while True:
-        print("Broadcast Active")
-        for chunk in main():
-            currentChunk = chunk
-    
+   global currentChunk
+   while True:
+       print("Broadcast Active")
+       for chunk in main():
+           currentChunk = chunk    
 
-def listener(): 
-    global currentChunk
-    lastChunk = None
+def listener(userID): 
+   global currentChunk
+   lastChunk = None
 
-    while True:
-        if currentChunk != lastChunk :
-            lastChunk = currentChunk
-            yield currentChunk
-            
+   dict = {}
+
+   dict[userID] = Queue()
+
+   while True:
+       if currentChunk != lastChunk :
+           lastChunk = currentChunk
+           dict[userID].add(currentChunk)
+           yield dict[userID].get()
+
 #driver code
 
 if getattr(sys, 'frozen', False):
@@ -261,13 +286,13 @@ for root, _, files  in os.walk(MUSICPATH):
         if f.endswith((".flac", ".mp3")):
              activeMusicList.append(os.path.join(root, f))
 
-audio_Buffer = Queue(maxsize=200)
-currentChunk = b""
-
 app = Flask(__name__)
 @app.route("/stream")
 def stream() :
-    return Response(listener(), mimetype="audio/mpeg")
+
+    userID = uuid.uuid4()
+
+    return Response(listener(userID), mimetype="audio/mpeg")
 
 threading.Thread(target=broadCaster, daemon=True).start()
 

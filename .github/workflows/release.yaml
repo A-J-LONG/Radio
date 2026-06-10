@@ -1,0 +1,99 @@
+name: Build and Release Radio
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install PyInstaller
+        run: pip install pyinstaller
+
+      - name: Build Windows EXE (onefile)
+        run: |
+          pyinstaller --onefile --console --noconfirm --clean ^
+            --distpath dist/windows ^
+            --workpath build/windows ^
+            --specpath spec/windows ^
+            --add-data "bin;bin" ^
+            Radio.py
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: radio-windows
+          path: dist/windows/
+
+  build-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install PyInstaller
+        run: pip install pyinstaller
+
+      - name: Build Linux binary (onefile)
+        run: |
+          pyinstaller --onefile --console --noconfirm --clean \
+            --distpath dist/linux \
+            --workpath build/linux \
+            --specpath spec/linux \
+            --add-data "bin:bin" \
+            Radio.py
+
+      - name: Upload Linux artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: radio-linux
+          path: dist/linux/
+
+  release:
+    needs: [build-windows, build-linux]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download Windows build
+        uses: actions/download-artifact@v4
+        with:
+          name: radio-windows
+          path: release/windows
+
+      - name: Download Linux build
+        uses: actions/download-artifact@v4
+        with:
+          name: radio-linux
+          path: release/linux
+
+      - name: Rename binaries
+        run: |
+          mv release/windows/Radio.exe radio-windows.exe
+          mv release/linux/Radio radio-linux
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            radio-windows.exe
+            radio-linux

@@ -373,3 +373,6 @@ Audio/Speech/*
 
 # Keep bin
 !bin/
+
+# Python virtual environment
+venv/
