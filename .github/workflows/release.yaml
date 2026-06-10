@@ -19,18 +19,22 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.14" # Matched to your local environment
 
-      - name: Install PyInstaller
-        run: pip install pyinstaller
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller
+          if (Test-Path requirements.txt) { pip install -r requirements.txt }
 
       - name: Build Windows EXE (onefile)
+        # Optimized to only grab the Windows-specific FFmpeg folder
         run: |
           pyinstaller --onefile --console --noconfirm --clean ^
             --distpath dist/windows ^
             --workpath build/windows ^
             --specpath spec/windows ^
-            --add-data "bin;bin" ^
+            --add-data "bin/FFmpeg/Windows;bin/FFmpeg/Windows" ^
             Radio.py
 
       - name: Upload Windows artifact
@@ -49,18 +53,22 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.14" # Matched to your local environment
 
-      - name: Install PyInstaller
-        run: pip install pyinstaller
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
       - name: Build Linux binary (onefile)
+        # Optimized to only grab the Linux-specific FFmpeg folder
         run: |
           pyinstaller --onefile --console --noconfirm --clean \
             --distpath dist/linux \
             --workpath build/linux \
             --specpath spec/linux \
-            --add-data "bin:bin" \
+            --add-data "bin/FFmpeg/Linux:bin/FFmpeg/Linux" \
             Radio.py
 
       - name: Upload Linux artifact
