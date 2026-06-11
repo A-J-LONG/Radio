@@ -258,8 +258,6 @@ if getattr(sys, 'frozen', False):
 else :
     BASEPATH = os.path.dirname(__file__)
 
-BASEPATH = os.path.dirname(__file__)
-
 EDITPATH = os.path.join(BASEPATH, "..", "RadioData")
 
 
