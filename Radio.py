@@ -261,30 +261,32 @@ def listener(userID):
 #driver code
 
 if getattr(sys, 'frozen', False):
-    BASEPATH = os.path.dirname(sys.executable)
+    IBASEPATH = sys._MEIPASS
+    EBASEPATH = os.path.dirname(sys.executable)
 else :
-    BASEPATH = os.path.dirname(__file__)
+    IBASEPATH = os.path.dirname(__file__)
+    EBASEPATH = os.path.join(os.path.dirname(__file__), "..")
 
-EDITPATH = os.path.join(BASEPATH, "..", "RadioData")
+EDITPATH = os.path.join(EBASEPATH, "RadioData")
 
 
 os.makedirs(EDITPATH, exist_ok=True)
 
 MUSICPATH = os.path.join(EDITPATH, "Music")
-SPEECHPATH = os.path.join(BASEPATH, "Audio", "Speech", "Speech.mp3")
-DATAPATH = os.path.join(BASEPATH, "Data")
+SPEECHPATH = os.path.join(IBASEPATH, "Audio", "Speech", "Speech.mp3")
+DATAPATH = os.path.join(IBASEPATH, "Data")
 APIPATH = os.path.join(DATAPATH, "API.txt")
 PORTPATH = os.path.join(EDITPATH, "Port")
-SCRIPTLOCATION = os.path.join(BASEPATH, "Audio", "Speech", "scripts", "Script.txt")
+SCRIPTLOCATION = os.path.join(IBASEPATH, "Audio", "Speech", "scripts", "Script.txt")
 
 os.makedirs(MUSICPATH, exist_ok=True)
 os.makedirs(PORTPATH,  exist_ok=True)
 
 
 if platform.system() == "Windows":
-    FFMPEGPATH = os.path.join(BASEPATH, "bin", "FFmpeg", "Windows", "ffmpeg-7.1.1", "bin", "ffmpeg.exe")
+    FFMPEGPATH = os.path.join(IBASEPATH, "bin", "FFmpeg", "Windows", "ffmpeg-7.1.1", "bin", "ffmpeg.exe")
 else :
-    FFMPEGPATH = os.path.join(BASEPATH, "bin", "FFmpeg", "Linux", "ffmpeg-git-20240629-amd64-static", "ffmpeg")
+    FFMPEGPATH = os.path.join(IBASEPATH, "bin", "FFmpeg", "Linux", "ffmpeg-git-20240629-amd64-static", "ffmpeg")
 
     try:
         os.chmod(FFMPEGPATH,os.stat(FFMPEGPATH).st_mode | stat.S_IEXEC)
