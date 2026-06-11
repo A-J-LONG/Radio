@@ -3,9 +3,6 @@
 # TODO Give LLM memory
 # TODO Add a --NoAI argument for startup
 
-
-from asyncio.subprocess import DEVNULL
-from pickle import NONE
 from mutagen.id3 import ID3NoHeaderError
 from cerebras.cloud.sdk import Cerebras
 from mutagen.easyid3 import EasyID3
@@ -42,7 +39,7 @@ def LLM(firstSong, lastSong):
        if not API :
            raise ValueError
     except (FileNotFoundError, ValueError):
-       API = input("Input API key").strip()
+       API = input("Input API key ").strip()
    
     with open(APIPATH, "w") as f :
         f.write(API)
@@ -258,15 +255,27 @@ def listener(userID):
 
 if getattr(sys, 'frozen', False):
     BASEPATH = os.path.dirname(sys.executable)
-    BASEPATH = os.path.join(BASEPATH, "..", "..","..")
 else :
     BASEPATH = os.path.dirname(__file__)
 
-MUSICPATH = os.path.join(BASEPATH, "Audio", "Music")
+BASEPATH = os.path.dirname(__file__)
+
+EDITPATH = os.path.join(BASEPATH, "..", "RadioData")
+
+
+os.makedirs(EDITPATH, exist_ok=True)
+
+MUSICPATH = os.path.join(EDITPATH, "Music")
 SPEECHPATH = os.path.join(BASEPATH, "Audio", "Speech", "Speech.mp3")
 DATAPATH = os.path.join(BASEPATH, "Data")
 APIPATH = os.path.join(DATAPATH, "API.txt")
-SCRIPTLOCATION = os.path.join(DATAPATH, "scripts", "Script.txt")
+PORTPATH = os.path.join(EDITPATH, "Port")
+SCRIPTLOCATION = os.path.join(BASEPATH, "Audio", "Speech", "scripts", "Script.txt")
+
+os.makedirs(MUSICPATH, exist_ok=True)
+os.makedirs(PORTPATH,  exist_ok=True)
+
+
 if platform.system() == "Windows":
     FFMPEGPATH = os.path.join(BASEPATH, "bin", "FFmpeg", "Windows", "ffmpeg-7.1.1", "bin", "ffmpeg.exe")
 else :
@@ -277,14 +286,44 @@ else :
     except Exception:
         raise RuntimeError(f"FFMPEG IS NOT EXECUTABLE PLEASE RUN : chmod +x {FFMPEGPATH}")
 
-with open(os.path.join(DATAPATH, "Port.txt"), "r") as f :
-    PORT = f.read().strip()
+if(MUSICPATH) :
+    try :
+        with open(os.path.join(PORTPATH, "Port.txt"), "r") as f :
+            PORT = f.read().strip()
+        
+    except FileNotFoundError:
+        with open(os.path.join(PORTPATH, "Port.txt"), "w") as f :
+            f.write(input("PORT MISSING, INPUT PORT NOW : "))
+
+        with open(os.path.join(PORTPATH, "Port.txt"), "r") as f :
+            PORT = f.read().strip()
+
 
     activeMusicList = []
-for root, _, files  in os.walk(MUSICPATH):
-    for f in files:
-        if f.endswith((".flac", ".mp3")):
-             activeMusicList.append(os.path.join(root, f))
+    for root, _, files  in os.walk(MUSICPATH):
+        for f in files:
+            if f.endswith((".flac", ".mp3")):
+                 activeMusicList.append(os.path.join(root, f))
+
+else :
+    os.mkdir(MUSICPATH)
+
+    try :
+        with open(os.path.join(PORTPATH, "Port.txt"), "r") as f :
+            PORT = f.read().strip()
+        
+    except FileNotFoundError:
+        with open(os.path.join(PORTPATH, "Port.txt"), "w") as f :
+            f.write(input("PORT MISSING, INPUT PORT NOW : "))
+
+        with open(os.path.join(PORTPATH, "Port.txt"), "r") as f :
+            PORT = f.read().strip()
+
+    activeMusicList = []
+    for root, _, files  in os.walk(MUSICPATH):
+        for f in files:
+            if f.endswith((".flac", ".mp3")):
+                 activeMusicList.append(os.path.join(root, f))
 
 app = Flask(__name__)
 @app.route("/stream")
@@ -294,7 +333,7 @@ def stream() :
 
     return Response(listener(userID), mimetype="audio/mpeg")
 
-threading.Thread(target=broadCaster, daemon=True).start()
+threading.Thread(target=broadCaster, args=(), daemon=True).start()
 
 if __name__ == "__main__":
     serve(app, host="0.0.0.0", port=PORT)
