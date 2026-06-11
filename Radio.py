@@ -238,18 +238,25 @@ def broadCaster() :
            currentChunk = chunk    
 
 def listener(userID): 
-   global currentChunk
-   lastChunk = None
+    global currentChunk 
+    lastChunk = None
 
-   dict = {}
+    dict = {}
 
-   dict[userID] = Queue()
+    dict[userID] = Queue()
 
-   while True:
-       if currentChunk != lastChunk :
-           lastChunk = currentChunk
-           dict[userID].add(currentChunk)
-           yield dict[userID].get()
+    while True:
+        try :
+            if currentChunk != lastChunk :
+                lastChunk = currentChunk
+                dict[userID].add(currentChunk)
+                yield dict[userID].get()
+        except Exception as e :
+
+            print(f"ERROR TYPE IS {type(e).__name__} LINE 256")
+            print(f"ERROR message IS {e} LINE 256")
+
+            time.sleep("5")
 
 #driver code
 
