@@ -1,5 +1,5 @@
-# TODO Fix searching music files everytime
 # TODO Refactor main to smaller functions
+# TODO Decrease duplicate songs
 # TODO Give LLM memory
 # TODO Add a --NoAI argument for startup
 
@@ -31,19 +31,36 @@ class Queue():
     def get(self) : 
         return self.list.pop(0)
 
+class MusicSelection():
+    def __init__(self):
+        self.music = []
+        for root, _, files  in os.walk(MUSICPATH):
+            for f in files:
+                if f.endswith((".flac", ".mp3")):
+                     self.music.append(os.path.join(root, f))
+        if not self.music :
+            print(f"NO MUSIC IN {MUSICPATH}")
+            time.sleep(5)
+
+
+        print("search completed")
+            
+    def getSong(self):
+        return random.choice(self.music)
+
 def LLM(firstSong, lastSong):
     try :    
        with open(APIPATH, "r") as f :
            API = f.read().strip()
-   
+
        if not API :
            raise ValueError
     except (FileNotFoundError, ValueError):
        API = input("Input API key ").strip()
-   
+
     with open(APIPATH, "w") as f :
         f.write(API)
-    
+
     client = Cerebras(
         api_key = API
     )
@@ -51,38 +68,38 @@ def LLM(firstSong, lastSong):
         chat_completion = client.chat.completions.create(
             messages=[
                 {
-        
-                    
+    
+                
                     "role": "system",
                     "content": f"You are a Female radio presenter called Emily, The previous 2 songs played were {firstSong} and {lastSong}(this has already been played) in that order, do not describe your actions only your words, do not make up what is coming up next you dont know. Title, album or artist will say Unknow Artist/Title/Album if its unknow, anmything else and that is the name of the title/artist/album"
-                     
+                 
                 }
         ],
             model="gpt-oss-120b",
         )
         return(chat_completion.choices[0].message.content)
-        
-         
-    except Exception as e:
     
+     
+    except Exception as e:
+
         try:
             error_code = e.response.status_code
             if error_code == 401:
-                    
+                
                 print("ERROR 401 INVALID API KEY")
-            
+        
                 API = input("Input API key").strip()
-            
+        
                 with open(APIPATH, "w") as f :
                         f.write(API)
-                    
+                
                 return(LLM())
             elif error_code == 429:
                 return("Cereberus is facing high traffic right now please try again later")
-            
+        
             elif error_code == 404 :
                  return("ERROR CEREBERUS MODEL NOT FOUND")
-            
+        
             elif error_code != 200:
                 print(f"CEREBERUS ERROR CODE : {error_code}")
                 return("AN UNKNOWN ERROR OCCURED")
@@ -101,7 +118,7 @@ def streamOutput(LOCATION, Metadata) :
 
     song_title = Metadata.get("title", ["Unknown"])[0]
     song_artist = Metadata.get("artist", ["Unknown"])[0]
-    
+
     process = SubP.Popen([
         FFMPEGPATH,
         "-re",
@@ -116,11 +133,11 @@ def streamOutput(LOCATION, Metadata) :
         "-f", "mp3",         
         "pipe:1"
     ], stdout=SubP.PIPE, stderr=SubP.DEVNULL)
-    
+
     try:
         while process.poll() is None:
             chunk = process.stdout.read(4096)
-            
+        
             if chunk:
                 yield chunk
     finally :
@@ -128,21 +145,18 @@ def streamOutput(LOCATION, Metadata) :
         process.wait()
 
 def main() :
-    while True:
     
-        if not activeMusicList :
-            print (f"NO MUSIC FOUND IN {MUSICPATH}")    
-            time.sleep(5)
-            continue
-      
-        selectedSong = random.choice(activeMusicList)
-        selectedSong2 = random.choice(activeMusicList)
-    
-        while selectedSong2 == selectedSong :
+    activeMusicList = MusicSelection()    
+    while True:      
+
+
+        selectedSong1, selectedSong2 = activeMusicList.getSong(), activeMusicList.getSong()
+
+        while selectedSong2 == selectedSong1 :
             selectedSong2 = random.choice(activeMusicList)
-    
-        if selectedSong.endswith(".mp3"):
-            path = os.path.join(MUSICPATH, selectedSong)
+
+        if selectedSong1.endswith(".mp3"):
+            path = os.path.join(MUSICPATH, selectedSong1)
             try :
                 songPlayed = EasyID3(path)
             except ID3NoHeaderError :
@@ -154,11 +168,11 @@ def main() :
                     songPlayed["album"] =  "Unknown Album"
                 if not songPlayed.get("artist") :
                     songPlayed["artist"] =  "Unknown Artist"
-    
+
                 songPlayed.save(path)
-        elif selectedSong.endswith(".flac"):
-            path = os.path.join(MUSICPATH, selectedSong)
-    
+        elif selectedSong1.endswith(".flac"):
+            path = os.path.join(MUSICPATH, selectedSong1)
+
             songPlayed = FLAC(path)
             if not songPlayed.get("title") :
                 songPlayed["title"] =  "Unknown Title"
@@ -166,9 +180,9 @@ def main() :
                 songPlayed["album"] =  "Unknown Album"
             if not songPlayed.get("artist") :
                 songPlayed["artist"] =  "Unknown Artist"
-    
+
             songPlayed.save(path)
-    
+
         if selectedSong2.endswith(".mp3"):
             path = os.path.join(MUSICPATH, selectedSong2)
             try :
@@ -182,11 +196,11 @@ def main() :
                     songPlayed2["album"] =  "Unknown Album"
                 if not songPlayed2.get("artist") :
                     songPlayed2["artist"] =  "Unknown Artist"
-    
+
                 songPlayed2.save(path)
         elif selectedSong2.endswith(".flac") :
             path = os.path.join(MUSICPATH, selectedSong2)
-    
+
             songPlayed2 = FLAC(path)
             if not songPlayed2.get("title") :
                 songPlayed2["title"] =  "Unknown Title"
@@ -194,28 +208,28 @@ def main() :
                 songPlayed2["album"] =  "Unknown Album"
             if not songPlayed2.get("artist") :
                 songPlayed2["artist"] =  "Unknown Artist"
-    
+
             songPlayed2.save(path)
-    
-    
-    
+
+
+
         speechPlayed = {
                         "artist": "Emily",
                         "album": "Edge_tts",
                         "title": "Speech Broadcast"
                         }                    
-    
-        SONGPATH = os.path.join(MUSICPATH, selectedSong)
+
+        SONGPATH = os.path.join(MUSICPATH, selectedSong1)
         SONGPATH2 = os.path.join(MUSICPATH, selectedSong2)
-    
+
         print(f"Now Playing : {songPlayed.get("title",["Unknown"])[0]}")
         print(f"Up Next : {songPlayed2.get("title",["Unknown"])[0]}")
-    
-    
+
+
         script = (LLM(songPlayed, songPlayed2))
         
         threading.Thread(target=lambda: asyncio.run(ttsAudioGeneration(script)),daemon=True).start()
-    
+
         newCycle = True
         i = 0
         while i <= 1:
@@ -305,13 +319,6 @@ if(MUSICPATH) :
         with open(os.path.join(PORTPATH, "Port.txt"), "r") as f :
             PORT = f.read().strip()
 
-
-    activeMusicList = []
-    for root, _, files  in os.walk(MUSICPATH):
-        for f in files:
-            if f.endswith((".flac", ".mp3")):
-                 activeMusicList.append(os.path.join(root, f))
-
 else :
     os.mkdir(MUSICPATH)
 
@@ -325,12 +332,6 @@ else :
 
         with open(os.path.join(PORTPATH, "Port.txt"), "r") as f :
             PORT = f.read().strip()
-
-    activeMusicList = []
-    for root, _, files  in os.walk(MUSICPATH):
-        for f in files:
-            if f.endswith((".flac", ".mp3")):
-                 activeMusicList.append(os.path.join(root, f))
 
 app = Flask(__name__)
 @app.route("/stream")
