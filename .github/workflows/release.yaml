@@ -31,11 +31,7 @@ jobs:
           }
 
       - name: Build Windows EXE (onefile)
-        run: |
-          pyinstaller --onefile --console --noconfirm --clean ^
-          --distpath dist/windows --workpath build/windows --specpath . ^
-          --add-data ".;." ^
-          Radio.py
+        run: pyinstaller --onefile --console --noconfirm --clean --distpath dist/windows --workpath build/windows --specpath . --add-data ".;." Radio.py
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
