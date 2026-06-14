@@ -289,7 +289,7 @@ os.makedirs(EDITPATH, exist_ok=True)
 MUSICPATH = os.path.join(EDITPATH, "Music")
 SPEECHPATH = os.path.join(IBASEPATH, "Audio", "Speech", "Speech.mp3")
 DATAPATH = os.path.join(IBASEPATH, "Data")
-APIPATH = os.path.join(DATAPATH, "API.txt")
+APIPATH = os.path.join(EDITPATH, "API.txt")
 PORTPATH = os.path.join(EDITPATH, "Port")
 SCRIPTLOCATION = os.path.join(IBASEPATH, "Audio", "Speech", "scripts", "Script.txt")
 
