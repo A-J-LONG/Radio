@@ -31,14 +31,18 @@ jobs:
           }
 
       - name: Build Windows EXE (onefile)
-        # Kept on a single line to fix the PowerShell multi-line parsing crash
-        run: pyinstaller --onefile --console --noconfirm --clean --distpath dist/windows --workpath build/windows --specpath . --add-data "bin/FFmpeg/Windows;bin/FFmpeg/Windows" Radio.py
+        run: |
+          pyinstaller --onefile --console --noconfirm --clean ^
+          --distpath dist/windows --workpath build/windows --specpath . ^
+          --add-data ".;." ^
+          Radio.py
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
           name: radio-windows
           path: dist/windows/
+
 
   build-linux:
     runs-on: ubuntu-latest
@@ -62,14 +66,18 @@ jobs:
           fi
 
       - name: Build Linux binary (onefile)
-        # Changed --specpath to "." so PyInstaller roots its asset-search out of your main directory
-        run: pyinstaller --onefile --console --noconfirm --clean --distpath dist/linux --workpath build/linux --specpath . --add-data "bin/FFmpeg/Linux:bin/FFmpeg/Linux" Radio.py
+        run: |
+          pyinstaller --onefile --console --noconfirm --clean \
+          --distpath dist/linux --workpath build/linux --specpath . \
+          --add-data ".:." \
+          Radio.py
 
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v4
         with:
           name: radio-linux
           path: dist/linux/
+
 
   release:
     needs: [build-windows, build-linux]
